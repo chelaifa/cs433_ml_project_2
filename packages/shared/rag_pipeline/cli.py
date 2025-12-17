@@ -183,7 +183,6 @@ def parse_pdfs(
     device: str = typer.Option("cuda", "--device", "-d", help="Device to use (cuda, cpu, mps)"),
 ):
     """Parse PDFs to markdown using Dolphin model."""
-    from .pdf_parsing.model.dolphin import DolphinModel
     from .pdf_parsing.core.pipeline import PDFParsingPipeline
 
     console.print(f"[bold blue]Parsing PDFs from:[/bold blue] {input_dir}")
