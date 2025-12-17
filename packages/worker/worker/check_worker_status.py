@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import boto3
 from collections import defaultdict
 
+
 def check_s3_status():
     """Check S3 upload status and statistics."""
 
@@ -23,23 +24,23 @@ def check_s3_status():
     print("=" * 70)
 
     # Initialize S3 client
-    s3 = boto3.client('s3')
-    bucket = os.getenv('S3_OUTPUT_BUCKET', 'cs433-rag-project2')
-    prefix = os.getenv('S3_OUTPUT_PREFIX', 'processed/')
+    s3 = boto3.client("s3")
+    bucket = os.getenv("S3_OUTPUT_BUCKET", "cs433-rag-project2")
+    prefix = os.getenv("S3_OUTPUT_PREFIX", "processed/")
 
     print(f"\nBucket: s3://{bucket}/{prefix}")
     print()
 
     # Count processed PDFs
     print("📊 Counting processed PDFs...")
-    paginator = s3.get_paginator('list_objects_v2')
-    pages = paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter='/')
+    paginator = s3.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter="/")
 
     processed_pdfs = []
     for page in pages:
-        if 'CommonPrefixes' in page:
-            for prefix_obj in page['CommonPrefixes']:
-                pdf_folder = prefix_obj['Prefix'].split('/')[-2]
+        if "CommonPrefixes" in page:
+            for prefix_obj in page["CommonPrefixes"]:
+                pdf_folder = prefix_obj["Prefix"].split("/")[-2]
                 processed_pdfs.append(pdf_folder)
 
     total_processed = len(processed_pdfs)
@@ -47,35 +48,35 @@ def check_s3_status():
 
     # Check total available PDFs
     print("\n📊 Checking total available PDFs...")
-    raw_prefix = os.getenv('S3_INPUT_PREFIX', 'raw_pdfs/')
+    raw_prefix = os.getenv("S3_INPUT_PREFIX", "raw_pdfs/")
     raw_pages = paginator.paginate(Bucket=bucket, Prefix=raw_prefix)
 
     total_pdfs = 0
     for page in raw_pages:
-        if 'Contents' in page:
-            total_pdfs += len([obj for obj in page['Contents'] if obj['Key'].endswith('.pdf')])
+        if "Contents" in page:
+            total_pdfs += len([obj for obj in page["Contents"] if obj["Key"].endswith(".pdf")])
 
     print(f"📚 Total PDFs to process: {total_pdfs}")
-    print(f"🎯 Progress: {total_processed}/{total_pdfs} ({total_processed*100//total_pdfs}%)")
+    print(f"🎯 Progress: {total_processed}/{total_pdfs} ({total_processed * 100 // total_pdfs}%)")
     print(f"⏳ Remaining: {total_pdfs - total_processed} PDFs")
 
     # Check last upload time
     print("\n⏰ Checking last upload time...")
 
     all_files = []
-    paginator = s3.get_paginator('list_objects_v2')
+    paginator = s3.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
 
     for page in pages:
-        if 'Contents' in page:
-            all_files.extend(page['Contents'])
+        if "Contents" in page:
+            all_files.extend(page["Contents"])
 
     if all_files:
         # Sort by last modified
-        all_files.sort(key=lambda x: x['LastModified'], reverse=True)
+        all_files.sort(key=lambda x: x["LastModified"], reverse=True)
 
         last_upload = all_files[0]
-        last_time = last_upload['LastModified']
+        last_time = last_upload["LastModified"]
         time_ago = datetime.now(last_time.tzinfo) - last_time
 
         print(f"📤 Last upload: {last_upload['Key']}")
@@ -87,7 +88,7 @@ def check_s3_status():
             print(f"\n⚠️  WARNING: No uploads in the last {format_timedelta(time_ago)}")
             print("   Workers may have stopped or encountered issues!")
         else:
-            print(f"\n✅ Workers appear to be active (recent upload)")
+            print("\n✅ Workers appear to be active (recent upload)")
     else:
         print("❌ No files found in processed folder!")
 
@@ -100,16 +101,16 @@ def check_s3_status():
     uploads_by_hour = defaultdict(int)
 
     for file_obj in all_files:
-        file_time = file_obj['LastModified']
+        file_time = file_obj["LastModified"]
         if file_time > last_24h:
-            hour_key = file_time.strftime('%Y-%m-%d %H:00')
+            hour_key = file_time.strftime("%Y-%m-%d %H:00")
             uploads_by_hour[hour_key] += 1
 
     # Show last 12 hours
     hours = sorted(uploads_by_hour.keys(), reverse=True)[:12]
     for hour in hours:
         count = uploads_by_hour[hour]
-        bar = '█' * (count // 10)
+        bar = "█" * (count // 10)
         print(f"  {hour}: {count:4d} files {bar}")
 
     # Estimate completion
@@ -122,21 +123,23 @@ def check_s3_status():
         pdfs_per_hour = files_per_hour / 35
 
         remaining_pdfs = total_pdfs - total_processed
-        hours_remaining = remaining_pdfs / pdfs_per_hour if pdfs_per_hour > 0 else float('inf')
+        hours_remaining = remaining_pdfs / pdfs_per_hour if pdfs_per_hour > 0 else float("inf")
 
-        print(f"\n⏱️  Estimated completion:")
+        print("\n⏱️  Estimated completion:")
         print(f"   Processing rate: ~{pdfs_per_hour:.1f} PDFs/hour")
         print(f"   Hours remaining: ~{hours_remaining:.1f} hours")
-        print(f"   Estimated completion: {(now + timedelta(hours=hours_remaining)).strftime('%Y-%m-%d %H:%M')}")
+        print(
+            f"   Estimated completion: {(now + timedelta(hours=hours_remaining)).strftime('%Y-%m-%d %H:%M')}"
+        )
 
     # Check for failure reports
     print("\n🔍 Checking for failure reports...")
     try:
-        failure_pages = paginator.paginate(Bucket=bucket, Prefix='failures/')
+        failure_pages = paginator.paginate(Bucket=bucket, Prefix="failures/")
         failure_files = []
         for page in failure_pages:
-            if 'Contents' in page:
-                failure_files.extend(page['Contents'])
+            if "Contents" in page:
+                failure_files.extend(page["Contents"])
 
         if failure_files:
             print(f"⚠️  Found {len(failure_files)} failure report(s):")
@@ -145,8 +148,9 @@ def check_s3_status():
             print(f"\n   Download with: aws s3 cp s3://{bucket}/{failure_files[0]['Key']} -")
         else:
             print("✅ No failure reports found")
-    except:
+    except Exception:
         print("✅ No failure reports found")
+
 
 def format_timedelta(td):
     """Format timedelta in human-readable form."""
@@ -165,6 +169,7 @@ def format_timedelta(td):
         days = seconds // 86400
         hours = (seconds % 86400) // 3600
         return f"{days} days {hours} hours"
+
 
 def check_worker_recommendations():
     """Provide recommendations based on status."""
@@ -188,6 +193,7 @@ def check_worker_recommendations():
     print("  Run: watch -n 60 'aws s3 ls s3://cs433-rag-project2/processed/ | wc -l'")
     print()
 
+
 def main():
     """Main entry point."""
     try:
@@ -201,5 +207,6 @@ def main():
         print("  export AWS_SECRET_ACCESS_KEY=...")
         sys.exit(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

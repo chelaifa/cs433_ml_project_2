@@ -32,8 +32,8 @@ from rag_pipeline.pdf_parsing.config import PDFParsingConfig
 # Configure logging (simple format first, will add worker_id later)
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 
@@ -42,14 +42,14 @@ class DistributedWorker:
 
     def __init__(self):
         """Initialize worker from environment variables."""
-        self.worker_id = int(os.getenv('WORKER_ID', '0'))
-        self.total_workers = int(os.getenv('TOTAL_WORKERS', '1'))
-        self.s3_input_bucket = os.getenv('S3_INPUT_BUCKET')
-        self.s3_input_prefix = os.getenv('S3_INPUT_PREFIX', 'pdfs/')
-        self.s3_output_bucket = os.getenv('S3_OUTPUT_BUCKET')
-        self.s3_output_prefix = os.getenv('S3_OUTPUT_PREFIX', 'processed/')
-        self.max_retries = int(os.getenv('MAX_RETRIES', '2'))
-        self.concurrent_pdfs = int(os.getenv('CONCURRENT_PDFS', '3'))  # Process 3 PDFs at once
+        self.worker_id = int(os.getenv("WORKER_ID", "0"))
+        self.total_workers = int(os.getenv("TOTAL_WORKERS", "1"))
+        self.s3_input_bucket = os.getenv("S3_INPUT_BUCKET")
+        self.s3_input_prefix = os.getenv("S3_INPUT_PREFIX", "pdfs/")
+        self.s3_output_bucket = os.getenv("S3_OUTPUT_BUCKET")
+        self.s3_output_prefix = os.getenv("S3_OUTPUT_PREFIX", "processed/")
+        self.max_retries = int(os.getenv("MAX_RETRIES", "2"))
+        self.concurrent_pdfs = int(os.getenv("CONCURRENT_PDFS", "3"))  # Process 3 PDFs at once
 
         # Validate configuration
         if not self.s3_input_bucket:
@@ -58,13 +58,14 @@ class DistributedWorker:
             raise ValueError("S3_OUTPUT_BUCKET environment variable required")
 
         # Initialize S3 client
-        self.s3 = boto3.client('s3')
+        self.s3 = boto3.client("s3")
 
         # Initialize PDF parsing config with temp output directory
         from rag_pipeline.pdf_parsing.config import OutputConfig, DolphinModelConfig
+
         self.config = PDFParsingConfig(
-            model=DolphinModelConfig(model_path=Path('/app/models/dolphin')),
-            output=OutputConfig(output_dir=Path('/tmp/pdf_output'))
+            model=DolphinModelConfig(model_path=Path("/app/models/dolphin")),
+            output=OutputConfig(output_dir=Path("/tmp/pdf_output")),
         )
         self.pipeline = None  # Lazy load to avoid loading model unless needed
 
@@ -73,7 +74,9 @@ class DistributedWorker:
 
         # Setup logger
         self.logger = logging.getLogger(__name__)
-        self.logger.info(f"Worker {self.worker_id}/{self.total_workers} initialized (concurrent PDFs: {self.concurrent_pdfs})")
+        self.logger.info(
+            f"Worker {self.worker_id}/{self.total_workers} initialized (concurrent PDFs: {self.concurrent_pdfs})"
+        )
 
     def get_pipeline(self) -> PDFParsingPipeline:
         """Lazy load PDF parsing pipeline."""
@@ -111,17 +114,12 @@ class DistributedWorker:
 
             try:
                 self.logger.info(f"Downloading {pdf_key}...")
-                download_from_s3(
-                    self.s3,
-                    self.s3_input_bucket,
-                    pdf_key,
-                    str(local_pdf)
-                )
+                download_from_s3(self.s3, self.s3_input_bucket, pdf_key, str(local_pdf))
 
                 # Process with Dolphin model
                 self.logger.info(f"Processing {pdf_key} with Dolphin...")
                 pipeline = self.get_pipeline()
-                result = pipeline.parse_document(local_pdf)
+                pipeline.parse_document(local_pdf)
 
                 # Get output paths
                 pdf_id = extract_pdf_id(pdf_key)
@@ -134,12 +132,12 @@ class DistributedWorker:
                 if not markdown_path.exists():
                     raise FileNotFoundError(f"Markdown not generated: {markdown_path}")
 
-                self.logger.info(f"Uploading document.md...")
+                self.logger.info("Uploading document.md...")
                 upload_to_s3(
                     self.s3,
                     self.s3_output_bucket,
                     f"{base_s3_path}document.md",
-                    markdown_path.read_text()
+                    markdown_path.read_text(),
                 )
 
                 # 2. Upload metadata.json
@@ -147,12 +145,12 @@ class DistributedWorker:
                 json_path = json_dir / f"{local_pdf.stem}.json"
 
                 if json_path.exists():
-                    self.logger.info(f"Uploading metadata.json...")
+                    self.logger.info("Uploading metadata.json...")
                     upload_to_s3(
                         self.s3,
                         self.s3_output_bucket,
                         f"{base_s3_path}metadata.json",
-                        json_path.read_text()
+                        json_path.read_text(),
                     )
 
                 # 3. Upload all figures
@@ -164,7 +162,7 @@ class DistributedWorker:
                         self.s3.upload_file(
                             str(figure_file),
                             self.s3_output_bucket,
-                            f"{base_s3_path}figures/{figure_file.name}"
+                            f"{base_s3_path}figures/{figure_file.name}",
                         )
 
                 self.logger.info(f"✓ Successfully processed {pdf_key}")
@@ -172,29 +170,29 @@ class DistributedWorker:
                 # Clear GPU cache to prevent memory fragmentation
                 try:
                     import torch
+
                     if torch.cuda.is_available():
                         torch.cuda.empty_cache()
                         torch.cuda.synchronize()
-                except:
+                except Exception:
                     pass
 
                 return True
 
             except Exception as e:
                 self.logger.error(f"✗ Failed to process {pdf_key}: {e}")
-                self.failures.append({
-                    'pdf_key': pdf_key,
-                    'error': str(e),
-                    'error_type': type(e).__name__
-                })
+                self.failures.append(
+                    {"pdf_key": pdf_key, "error": str(e), "error_type": type(e).__name__}
+                )
 
                 # Clear GPU cache even on failure
                 try:
                     import torch
+
                     if torch.cuda.is_available():
                         torch.cuda.empty_cache()
                         torch.cuda.synchronize()
-                except:
+                except Exception:
                     pass
 
                 return False
@@ -222,11 +220,15 @@ class DistributedWorker:
         successful = 0
         failed = 0
 
-        self.logger.info(f"Processing {len(my_pdfs)} PDFs with {self.concurrent_pdfs} concurrent workers...")
+        self.logger.info(
+            f"Processing {len(my_pdfs)} PDFs with {self.concurrent_pdfs} concurrent workers..."
+        )
 
         with ThreadPoolExecutor(max_workers=self.concurrent_pdfs) as executor:
             # Submit all PDF processing tasks
-            future_to_pdf = {executor.submit(self.process_pdf, pdf_key): pdf_key for pdf_key in my_pdfs}
+            future_to_pdf = {
+                executor.submit(self.process_pdf, pdf_key): pdf_key for pdf_key in my_pdfs
+            }
 
             # Process results as they complete
             for i, future in enumerate(as_completed(future_to_pdf), 1):
@@ -241,18 +243,20 @@ class DistributedWorker:
                     failed += 1
 
                 # Log progress
-                self.logger.info(f"Progress: {i}/{len(my_pdfs)} ({i*100//len(my_pdfs)}%) - Success: {successful}, Failed: {failed}")
+                self.logger.info(
+                    f"Progress: {i}/{len(my_pdfs)} ({i * 100 // len(my_pdfs)}%) - Success: {successful}, Failed: {failed}"
+                )
 
         # Upload failure report if any
         if self.failures:
             self.upload_failure_report()
 
         # Summary
-        self.logger.info(f"\n{'='*60}")
+        self.logger.info(f"\n{'=' * 60}")
         self.logger.info(f"Worker {self.worker_id} completed!")
         self.logger.info(f"  Successful: {successful}/{len(my_pdfs)}")
         self.logger.info(f"  Failed: {failed}/{len(my_pdfs)}")
-        self.logger.info(f"{'='*60}\n")
+        self.logger.info(f"{'=' * 60}\n")
 
         # Exit with error code if any failures
         if failed > 0:
@@ -263,19 +267,16 @@ class DistributedWorker:
         failure_key = f"failures/worker-{self.worker_id}-failures.json"
 
         report = {
-            'worker_id': self.worker_id,
-            'total_workers': self.total_workers,
-            'failures': self.failures
+            "worker_id": self.worker_id,
+            "total_workers": self.total_workers,
+            "failures": self.failures,
         }
 
         try:
-            upload_to_s3(
-                self.s3,
-                self.s3_output_bucket,
-                failure_key,
-                json.dumps(report, indent=2)
+            upload_to_s3(self.s3, self.s3_output_bucket, failure_key, json.dumps(report, indent=2))
+            self.logger.info(
+                f"Uploaded failure report to s3://{self.s3_output_bucket}/{failure_key}"
             )
-            self.logger.info(f"Uploaded failure report to s3://{self.s3_output_bucket}/{failure_key}")
         except Exception as e:
             self.logger.error(f"Failed to upload failure report: {e}")
 
@@ -290,5 +291,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
