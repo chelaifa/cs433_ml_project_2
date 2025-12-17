@@ -139,6 +139,10 @@ class DolphinModel(ModelWrapper):
             if len(prompts) == 1 and len(images) > 1:
                 prompts = prompts * len(images)
 
+            # Ensure model is loaded
+            if self.processor is None or self.tokenizer is None or self.model is None:
+                raise RuntimeError("Model not loaded. Call load() first.")
+
             # Prepare images
             batch_inputs = self.processor(images, return_tensors="pt", padding=True)
 
