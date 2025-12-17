@@ -112,7 +112,7 @@ app = FastAPI(
 )
 
 # CORS - allow frontend to call API
-app.add_middleware(
+app.add_middleware(  # type: ignore[arg-type]
     CORSMiddleware,
     allow_origins=["*"],  # In production, set to your frontend domain
     allow_credentials=True,
