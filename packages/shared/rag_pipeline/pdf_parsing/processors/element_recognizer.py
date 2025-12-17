@@ -3,7 +3,7 @@ Element recognition processor for extracting content from layout elements.
 """
 
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from PIL import Image
 
@@ -35,7 +35,7 @@ class ElementRecognizer(
         "title": "Read text in the image.",
     }
 
-    def __init__(self, model: DolphinModel, config: ProcessingConfig, save_dir: Path = None):
+    def __init__(self, model: DolphinModel, config: ProcessingConfig, save_dir: Optional[Path] = None):
         """
         Initialize element recognizer.
 

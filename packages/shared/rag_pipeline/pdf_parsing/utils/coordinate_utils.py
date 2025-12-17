@@ -4,7 +4,7 @@ Coordinate transformation utilities for image processing.
 Handles coordinate mapping between padded and original image spaces.
 """
 
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 
@@ -50,8 +50,8 @@ def map_to_original_coordinates(
 
 
 def process_coordinates(
-    coords: list, padded_image: np.ndarray, dims: ImageDimensions, previous_box: list = None
-) -> Tuple[int, int, int, int, int, int, int, int, list]:
+    coords: list, padded_image: np.ndarray, dims: ImageDimensions, previous_box: Optional[list] = None
+) -> Tuple[int, int, int, int, int, int, int, int, Optional[list]]:
     """
     Process and adjust coordinates from normalized space to pixel space.
 

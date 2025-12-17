@@ -10,6 +10,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Optional
 from tqdm.auto import tqdm
 import time
 
@@ -19,11 +20,11 @@ from scripts.utils.markdown_s3_loader import S3MarkdownLoader
 
 def chunk_all_papers(
     bucket_name: str,
-    output_dir: str = None,
+    output_dir: Optional[str] = None,
     save_to_s3: bool = False,
     s3_output_prefix: str = "chunks/",
     chunk_type: str = "both",  # "coarse", "fine", or "both"
-    num_papers: int = None,
+    num_papers: Optional[int] = None,
     start_index: int = 0,
     coarse_target_size: int = 2000,
     fine_target_size: int = 300,
