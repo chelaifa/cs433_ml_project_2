@@ -56,6 +56,7 @@ cloud = [
     "boto3>=1.34.0",
     "botocore>=1.34.0",
     "aiohttp>=3.9.0",
+    "bs4>=0.0.2",  # Used by openalex downloader (SciHub scraping)
 ]
 
 # Analysis and benchmarking
@@ -74,7 +75,6 @@ cli = [
     "typer>=0.9.0",
     "rich>=13.7.0",
     "pyyaml>=6.0.1",
-    "bs4>=0.0.2",
     "nltk>=3.8.1",
     "markdown>=3.5.1",
 ]
