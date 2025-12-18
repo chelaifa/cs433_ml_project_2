@@ -102,8 +102,6 @@ if [[ "$PACKAGE" == "api" ]]; then
         --include-tools \
         --project="${BUILD_DIR}/wheels/api-0.1.0-py3-none-any.whl" \
         --requirements="${BUILD_DIR}/requirements.all.txt" \
-        --venv-repository "${BUILD_DIR}/install.venv/" \
-        --exe uvicorn \
         --script uvicorn \
         -o "${DIST_DIR}/${PACKAGE}.pex"
 
@@ -116,7 +114,6 @@ elif [[ "$PACKAGE" == "worker" ]]; then
         --include-tools \
         --project="${BUILD_DIR}/wheels/worker-0.1.0-py3-none-any.whl" \
         --requirements="${BUILD_DIR}/requirements.all.txt" \
-        --venv-repository "${BUILD_DIR}/install.venv/" \
         --python-shebang '/usr/bin/env python3' \
         -o "${DIST_DIR}/${PACKAGE}.pex"
 
