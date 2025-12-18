@@ -82,9 +82,8 @@ uv pip install \
     --quiet \
     --python "${BUILD_DIR}/install.venv" \
     --python-platform="${PLATFORM}" \
-    --no-index \
-    --find-links "${BUILD_DIR}/wheels" \
-    "rag_pipeline" "${PACKAGE}"
+    "${BUILD_DIR}/wheels/rag_pipeline-0.1.0-py3-none-any.whl" \
+    "${BUILD_DIR}/wheels/${PACKAGE}-0.1.0-py3-none-any.whl"
 
 # Step 4: Generate requirements.txt for pex
 echo -e "${YELLOW}[4/5] Generating requirements.txt...${NC}"
