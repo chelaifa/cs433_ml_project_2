@@ -20,11 +20,11 @@ if [[ -z "${2:-}" ]]; then
     ARCH=$(uname -m)
     if [[ "$ARCH" == "arm64" ]]; then
         # Apple Silicon - default to linux/arm64 for Docker deployment
-        PLATFORM="aarch64-manylinux2014"
+        PLATFORM="aarch64-manylinux_2_28"
     elif [[ "$ARCH" == "aarch64" ]]; then
-        PLATFORM="aarch64-manylinux2014"
+        PLATFORM="aarch64-manylinux_2_28"
     elif [[ "$ARCH" == "x86_64" ]]; then
-        PLATFORM="x86_64-manylinux2014"
+        PLATFORM="x86_64-manylinux_2_28"
     else
         echo -e "${RED}Unknown architecture: $ARCH${NC}"
         echo "Please specify platform manually"
