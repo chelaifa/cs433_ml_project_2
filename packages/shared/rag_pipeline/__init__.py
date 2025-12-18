@@ -1,6 +1,6 @@
 """RAG Pipeline for Academic Papers."""
 
-__version__ = "0.1.0"
+__version__ = "1.0.1"
 __author__ = "Elie Bruno"
 __description__ = "RAG pipeline for academic papers with OpenAlex and Dolphin"
 

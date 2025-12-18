@@ -326,7 +326,7 @@ def info():
     table.add_column("Key", style="cyan")
     table.add_column("Value", style="white")
 
-    table.add_row("Version", "0.1.0")
+    table.add_row("Version", "1.0.1")
     table.add_row("Python Package", "rag-pipeline")
     table.add_row("", "")
     table.add_row("Components", "")

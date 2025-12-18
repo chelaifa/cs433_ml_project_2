@@ -1,6 +1,6 @@
 [project]
 name = "rag_pipeline"
-version = "1.0.0"
+version = "1.0.1"
 description = "Shared RAG pipeline library - Core utilities and components"
 readme = "../../README.md"
 requires-python = ">=3.10"

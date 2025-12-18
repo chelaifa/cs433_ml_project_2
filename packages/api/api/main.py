@@ -107,7 +107,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="RAG Search API",
     description="Search academic papers using FAISS + ZeroEntropy reranking",
-    version="1.0.0",
+    version="1.0.1",
     lifespan=lifespan,
 )
 

@@ -211,7 +211,7 @@ wheels = [
 
 [[package]]
 name = "api"
-version = "1.0.0"
+version = "1.0.1"
 source = { editable = "packages/api" }
 dependencies = [
     { name = "fastapi" },
@@ -4257,7 +4257,7 @@ wheels = [
 
 [[package]]
 name = "rag-pipeline"
-version = "1.0.0"
+version = "1.0.1"
 source = { editable = "packages/shared" }
 dependencies = [
     { name = "loguru" },
@@ -5884,7 +5884,7 @@ wheels = [
 
 [[package]]
 name = "worker"
-version = "1.0.0"
+version = "1.0.1"
 source = { editable = "packages/worker" }
 dependencies = [
     { name = "rag-pipeline", extra = ["cli", "cloud", "pdf", "vector"] },

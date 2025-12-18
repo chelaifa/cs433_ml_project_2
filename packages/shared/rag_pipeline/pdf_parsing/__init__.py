@@ -41,7 +41,7 @@ from rag_pipeline.pdf_parsing.data_models import (
 from rag_pipeline.pdf_parsing.factories import ProcessorFactory
 from rag_pipeline.pdf_parsing.model import DolphinModel
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 __all__ = [
     # Main pipeline
