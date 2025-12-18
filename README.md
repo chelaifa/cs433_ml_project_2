@@ -531,6 +531,7 @@ project-2-rag/
 
 - **[CI.md](CI.md)**: CI/CD pipeline with uv + pex (fast builds, caching, deployment)
 - **[DOCKER.md](DOCKER.md)**: Docker build and deployment guide
+- **[RELEASING.md](RELEASING.md)**: Release process and versioning guide
 - **[docs/plans/distributed-pdf-processing-design.md](docs/plans/)**: Distributed worker architecture
 - **[docs/plans/rag-architecture-design.md](docs/plans/)**: RAG pipeline design decisions
 - **[scripts/README.md](scripts/README.md)**: Operational scripts documentation
