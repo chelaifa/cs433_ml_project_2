@@ -1,59 +1,66 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":dependencyDashboard",
-    ":semanticCommits",
-    ":separateMajorReleases",
-    "group:allNonMajor",
-    "schedule:weekends"
+    "config:best-practices",
+    ":maintainLockFilesWeekly"
   ],
   "timezone": "Europe/Zurich",
+  "schedule": ["before 10am on monday"],
   "labels": ["dependencies"],
   "assignees": ["@eliebruno"],
   "reviewers": ["@eliebruno"],
-
   "prConcurrentLimit": 3,
   "prHourlyLimit": 2,
+  "commitMessagePrefix": "⬆️",
 
   "packageRules": [
     {
-      "description": "Python dependencies (uv workspace)",
-      "matchManagers": ["pep621"],
-      "matchCategories": ["python"],
-      "groupName": "Python dependencies",
-      "groupSlug": "python",
-      "semanticCommitType": "chore",
-      "semanticCommitScope": "deps-python",
-      "schedule": ["before 10am on monday"],
-      "automerge": false,
-      "rangeStrategy": "bump"
+      "matchUpdateTypes": ["major"],
+      "commitMessagePrefix": "💥",
+      "labels": ["dependencies", "major"]
     },
     {
-      "description": "Python dev dependencies",
-      "matchManagers": ["pep621"],
-      "matchDepTypes": ["dev", "optional"],
-      "groupName": "Python dev dependencies",
-      "groupSlug": "python-dev",
-      "semanticCommitType": "chore",
-      "semanticCommitScope": "deps-dev",
-      "automerge": false,
-      "schedule": ["before 10am on monday"]
+      "matchUpdateTypes": ["minor"],
+      "commitMessagePrefix": "✨",
+      "labels": ["dependencies", "minor"]
     },
     {
-      "description": "Frontend dependencies (Next.js)",
+      "matchUpdateTypes": ["patch"],
+      "commitMessagePrefix": "🐛",
+      "labels": ["dependencies", "patch"]
+    },
+    {
+      "matchUpdateTypes": ["pin", "digest"],
+      "commitMessagePrefix": "📌",
+      "labels": ["dependencies", "pin"]
+    },
+    {
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "commitMessagePrefix": "🔒",
+      "labels": ["dependencies", "lockfile"]
+    },
+    {
+      "description": "GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "commitMessagePrefix": "👷",
+      "labels": ["dependencies", "ci"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Group minor/patch Python deps",
+      "matchManagers": ["pep621"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "python-deps"
+    },
+    {
+      "description": "Group minor/patch Frontend deps",
       "matchManagers": ["npm"],
       "matchPaths": ["frontend/**"],
-      "groupName": "Frontend dependencies",
-      "groupSlug": "frontend",
-      "semanticCommitType": "chore",
-      "semanticCommitScope": "deps-frontend",
-      "schedule": ["before 10am on monday"],
-      "automerge": false,
-      "rangeStrategy": "bump"
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "frontend-deps"
     },
     {
-      "description": "Major Python ML/AI libraries - manual review required",
+      "description": "ML/AI libraries - review carefully",
       "matchManagers": ["pep621"],
       "matchPackageNames": [
         "torch",
@@ -65,110 +72,29 @@
         "litellm",
         "faiss-cpu"
       ],
-      "groupName": "ML/AI major dependencies",
-      "groupSlug": "ml-major",
-      "semanticCommitType": "feat",
-      "semanticCommitScope": "ml-deps",
-      "automerge": false,
-      "schedule": ["before 10am on monday"],
-      "labels": ["dependencies", "ml", "requires-testing"],
-      "prPriority": 10
-    },
-    {
-      "description": "FastAPI and web framework updates",
-      "matchManagers": ["pep621"],
-      "matchPackageNames": [
-        "fastapi",
-        "uvicorn",
-        "pydantic",
-        "pydantic-settings"
-      ],
-      "groupName": "Web framework dependencies",
-      "groupSlug": "web-framework",
-      "semanticCommitType": "chore",
-      "semanticCommitScope": "deps-web",
-      "automerge": false,
-      "schedule": ["before 10am on monday"]
-    },
-    {
-      "description": "Next.js major updates - manual review",
-      "matchManagers": ["npm"],
-      "matchPackageNames": ["next", "react", "react-dom"],
-      "matchUpdateTypes": ["major"],
-      "groupName": "Next.js major updates",
-      "groupSlug": "nextjs-major",
-      "automerge": false,
-      "labels": ["dependencies", "frontend", "breaking-change"],
-      "prPriority": 10
-    },
-    {
-      "description": "Security updates - high priority",
-      "matchUpdateTypes": ["patch"],
-      "matchDepTypes": ["dependencies"],
-      "matchCurrentVersion": "!= 0.0.0",
-      "semanticCommitType": "fix",
-      "semanticCommitScope": "security",
-      "labels": ["security", "dependencies"],
-      "automerge": false,
-      "prPriority": 20
+      "labels": ["dependencies", "ml"],
+      "groupName": "ml-deps"
     },
     {
       "description": "Docker base images",
       "matchDatasources": ["docker"],
-      "groupName": "Docker base images",
-      "groupSlug": "docker",
-      "semanticCommitType": "chore",
-      "semanticCommitScope": "docker",
-      "schedule": ["before 10am on monday"],
-      "automerge": false
+      "commitMessagePrefix": "🐳",
+      "labels": ["dependencies", "docker"],
+      "groupName": "docker"
     }
   ],
 
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["security"],
-    "automerge": false,
     "prPriority": 30
   },
 
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 5am on monday"],
-    "automerge": false,
-    "semanticCommitType": "chore",
-    "semanticCommitScope": "lockfile"
-  },
-
-  "separateMinorPatch": false,
-  "ignoreDeps": [],
   "ignorePaths": [
     "**/node_modules/**",
     "**/__pycache__/**",
     "**/dist/**",
     "**/.venv/**",
     "**/build/**"
-  ],
-
-  "commitMessagePrefix": "⬆️",
-  "commitMessageAction": "Update",
-  "commitMessageTopic": "{{depName}}",
-  "commitMessageExtra": "to {{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}{{prettyNewMajor}}{{else}}{{#if isSingleVersion}}{{prettyNewVersion}}{{else}}{{#if newValue}}{{{newValue}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}",
-
-  "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{configDescription}}}{{{footer}}}",
-  "prTitle": "{{semanticPrefix}}{{#if isPin}}Pin{{else}}Update{{/if}} {{depName}} {{#if isRange}}to {{newValue}}{{else}}to {{newVersion}}{{/if}}",
-
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Update Python version in Dockerfiles",
-      "fileMatch": ["(^|/)Dockerfile$", "(^|/)Dockerfile\\.[^/]*$"],
-      "matchStrings": [
-        "FROM python:(?<currentValue>.*?)\\s",
-        "python(?<currentValue>\\d+\\.\\d+)"
-      ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "python",
-      "versioningTemplate": "docker"
-    }
   ]
 }
